@@ -3,15 +3,15 @@ using namespace std;
 
 struct PCB {
     int id, at, bt, pr, st = 0, ct = 0, wt = 0, tat = 0;
-    PCB(int i, int a, int b, int pri) { 
-        id = i; 
+    PCB(int i, int a, int b, int pri)    { 
+        id = i;         
         at = a; 
         bt = b; 
         pr = pri; 
     }
 };
 
-void prioritySched(vector<PCB>& p) {
+void prioritySched(vector<PCB>& p, vector<int>& order) {
     int n = p.size(), t = 0, idle = 0, completed = 0;
     vector<bool> done(n, false);
 
@@ -26,16 +26,19 @@ void prioritySched(vector<PCB>& p) {
             }
         }
 
+        // If no process has arrived yet, CPU is idle
         if (idx == -1) { 
             t++; 
             continue; 
         }
 
+        // Adjust idle time if needed
         if (t < p[idx].at) {
             idle += p[idx].at - t;
             t = p[idx].at;
         }
 
+        // Process execution
         p[idx].st = t;
         p[idx].ct = t + p[idx].bt;
         p[idx].tat = p[idx].ct - p[idx].at;
@@ -44,25 +47,60 @@ void prioritySched(vector<PCB>& p) {
         t += p[idx].bt;
         done[idx] = true;
         completed++;
+
+        // Store execution order
+        order.push_back(p[idx].id);
     }
 
     double util = (double)(t - idle) / t * 100;
-    cout << "Priority CPU Utilization: " << util << "%\n";
+    cout << "\nPriority CPU Utilization: " << util << "%\n";
 }
 
 void print(vector<PCB>& p) {
     double tw = 0, tt = 0;
-    cout << "ID\tAT\tBT\tPR\tWT\tTAT\n";
+    cout << "\nID\tAT\tBT\tPR\tWT\tTAT\n";
     for (auto &x : p) { 
-        cout << x.id << "\t" << x.at << "\t" << x.bt << "\t" << x.pr << "\t" << x.wt << "\t" << x.tat << "\n"; 
+        cout << x.id << "\t" << x.at << "\t" << x.bt << "\t" << x.pr 
+             << "\t" << x.wt << "\t" << x.tat << "\n"; 
         tw += x.wt; 
         tt += x.tat; 
     }
-    cout << "Avg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
+    cout << "\nAvg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
+}
+
+void displaySimpleGanttChart(vector<PCB>& p, vector<int>& order) {
+    cout << "\nGantt Chart:\n";
+
+    // Display process order
+    for (size_t i = 0; i < order.size(); i++) {
+        cout << "P" << order[i];
+        if (i != order.size() - 1) cout << " -> ";
+    }
+
+    // Display timeline
+    cout << "\n\nTimeline:\n";
+    // Find process by ID to get completion times
+    int start = p[order[0] - 1].st;
+    cout << start;
+    for (auto id : order) {
+        int end = p[id - 1].ct;
+        cout << "   " << end;
+    }
+    cout << "\n";
 }
 
 int main() {
-    vector<PCB> p = {PCB(1, 0, 5, 2), PCB(2, 1, 3, 1), PCB(3, 2, 8, 4), PCB(4, 3, 6, 3)};
-    prioritySched(p); 
+    vector<PCB> p = {
+        PCB(1, 0, 5, 2), 
+        PCB(2, 1, 3, 1), 
+        PCB(3, 2, 8, 4), 
+        PCB(4, 3, 6, 3)
+    };
+
+    vector<int> order;
+    prioritySched(p, order); 
     print(p);
+    displaySimpleGanttChart(p, order);
+    return 0;
 }
+    

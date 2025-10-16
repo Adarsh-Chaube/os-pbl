@@ -11,7 +11,7 @@ struct PCB {
     }
 };
 
-void roundRobin(vector<PCB>& p, int q) {
+void roundRobin(vector<PCB>& p, int q, vector<int>& ganttOrder, vector<int>& ganttTimes) {
     int n = p.size(), t = 0, idle = 0, completed = 0;
     queue<int> rq; 
     vector<bool> inQueue(n, false);
@@ -43,6 +43,9 @@ void roundRobin(vector<PCB>& p, int q) {
             t = pr.at;
         }
 
+        ganttOrder.push_back(pr.id);
+        ganttTimes.push_back(t); // start time of this slice
+
         t += ex;
         pr.rem -= ex;
 
@@ -63,6 +66,8 @@ void roundRobin(vector<PCB>& p, int q) {
         }
     }
 
+    ganttTimes.push_back(t); // final completion time
+
     double util = (double)(t - idle) / t * 100;
     cout << "RR CPU Utilization: " << util << "%\n";
 }
@@ -78,8 +83,26 @@ void print(vector<PCB>& p) {
     cout << "Avg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
 }
 
+void displaySimpleGanttChartRR(vector<int>& ganttOrder, vector<int>& ganttTimes) {
+    cout << "\nGantt Chart (RR):\n";
+    for (size_t i = 0; i < ganttOrder.size(); i++) {
+        cout << "P" << ganttOrder[i];
+        if (i != ganttOrder.size() - 1) cout << " -> ";
+    }
+
+    cout << "\n\nTimeline:\n";
+    for (auto t : ganttTimes) {
+        cout << t << "   ";
+    }
+    cout << "\n";
+}
+
 int main() {
     vector<PCB> p = {PCB(1, 0, 5), PCB(2, 1, 3), PCB(3, 2, 8), PCB(4, 3, 6)};
-    roundRobin(p, 2);
+    vector<int> ganttOrder, ganttTimes;
+    roundRobin(p, 2, ganttOrder, ganttTimes);
     print(p);
+    displaySimpleGanttChartRR(ganttOrder, ganttTimes);
+    return 0;
 }
+
