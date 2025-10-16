@@ -10,14 +10,14 @@ struct PCB {
     }
 };
 
-void sjf(vector<PCB>& p) {
+void sjf(vector<PCB>& p, vector<int>& order) {
     int n = p.size(), t = 0, idle = 0, completed = 0;
     vector<bool> done(n, false);
 
     while (completed < n) {
         int idx = -1, minbt = INT_MAX;
 
-        // Find the process with the minimum burst time that has arrived
+        // Find process with minimum burst time that has arrived
         for (int i = 0; i < n; i++) {
             if (!done[i] && p[i].at <= t && p[i].bt < minbt) {
                 idx = i;
@@ -43,26 +43,46 @@ void sjf(vector<PCB>& p) {
         t += p[idx].bt;
         done[idx] = true;
         completed++;
+
+        // Store execution order for Gantt chart
+        order.push_back(p[idx].id);
     }
 
     double util = (double)(t - idle) / t * 100;
-    cout << "SJF CPU Utilization: " << util << "%\n";
+    cout << "\nSJF CPU Utilization: " << util << "%\n";
 }
 
 void print(vector<PCB>& p) {
     double tw = 0, tt = 0;
-    cout << "ID\tAT\tBT\tWT\tTAT\n";
+    cout << "\nID\tAT\tBT\tWT\tTAT\n";
     for (auto &x : p) { 
         cout << x.id << "\t" << x.at << "\t" << x.bt << "\t" << x.wt << "\t" << x.tat << "\n"; 
         tw += x.wt; 
         tt += x.tat; 
     }
-    cout << "Avg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
+    cout << "\nAvg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
+}
+
+void displaySimpleGanttChartSJF(vector<PCB>& p, vector<int>& order) {
+    cout << "\nGantt Chart (SJF):\n";
+    for (size_t i = 0; i < order.size(); i++) {
+        cout << "P" << order[i];
+        if (i != order.size() - 1) cout << " -> ";
+    }
+
+    cout << "\n\nTimeline:\n";
+    for (size_t i = 0; i < order.size(); i++) {
+        int idx = order[i] - 1; // process id starts from 1
+        cout << p[idx].st << "   ";
+    }
+    cout << p[order.back() - 1].ct << "\n";
 }
 
 int main() {
     vector<PCB> p = {PCB(1, 0, 5), PCB(2, 1, 3), PCB(3, 2, 8), PCB(4, 3, 6)};
-    sjf(p); 
+    vector<int> order;
+    sjf(p, order); 
     print(p);
+    displaySimpleGanttChartSJF(p, order);
+    return 0;
 }
-
