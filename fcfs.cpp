@@ -17,7 +17,6 @@ void fcfs(vector<PCB>& p) {
     sort(p.begin(), p.end(), [](PCB a, PCB b){ return a.at < b.at; });
 
     int t = 0, idle = 0;
-
     for (auto &x : p) {
         if (t < x.at) {
             idle += x.at - t;
@@ -31,23 +30,38 @@ void fcfs(vector<PCB>& p) {
     }
 
     double util = (double)(t - idle) / t * 100;
-    cout << "CPU Utilization: " << util << "%\n";
+    cout << "\nCPU Utilization: " << util << "%\n";
 }
 
 void print(vector<PCB>& p) {
     double tw = 0, tt = 0;
-    cout << "ID\tAT\tBT\tWT\tTAT\n";
+    cout << "\nID\tAT\tBT\tWT\tTAT\n";
     for (auto &x : p) {
         cout << x.id << "\t" << x.at << "\t" << x.bt << "\t" << x.wt << "\t" << x.tat << "\n";
         tw += x.wt; 
         tt += x.tat;
     }
-    cout << "Avg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
+    cout << "\nAvg WT: " << tw / p.size() << ", Avg TAT: " << tt / p.size() << "\n";
+}
+
+void displaySimpleGanttChart(vector<PCB>& p) {
+    cout << "\nGantt Chart:\n";
+    for (size_t i = 0; i < p.size(); i++) {
+        cout << "P" << p[i].id;
+        if (i != p.size() - 1) cout << " -> ";
+    }
+    cout << "\n\nTimeline:\n";
+    cout << p[0].st;
+    for (auto &x : p)
+        cout << "   " << x.ct;
+    cout << "\n";
 }
 
 int main() {
     vector<PCB> p = { PCB(1, 0, 5), PCB(2, 1, 3), PCB(3, 2, 8), PCB(4, 3, 6) };
     fcfs(p);
     print(p);
+    displaySimpleGanttChart(p);
     return 0;
 }
+
